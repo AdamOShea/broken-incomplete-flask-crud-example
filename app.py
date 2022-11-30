@@ -8,10 +8,11 @@ app = Flask(__name__)
 CORS(app)
 # My SQL Instance configurations
 # Change these details to match your instance configurations
-app.config['MYSQL_USER'] = 'A'
-app.config['MYSQL_PASSWORD'] = 'B'
-app.config['MYSQL_DB'] = 'student'
-app.config['MYSQL_HOST'] = 'db.mydomain.ie'
+app.config['MYSQL_USER'] = 'root'
+app.config['MYSQL_PASSWORD'] = ''
+app.config['MYSQL_DB'] = 'Lab5'
+app.config['MYSQL_HOST'] = 'localhost'
+app.config['MYSQL_PORT'] = 3306
 mysql.init_app(app)
 
 @app.route("/add") #Add Student
@@ -21,9 +22,29 @@ def add():
   cur = mysql.connection.cursor() #create a connection to the SQL instance
   s='''INSERT INTO students(studentName, email) VALUES('{}','{}');'''.format(name,email) # kludge - use stored proc or params
   cur.execute(s)
-  mysql.connection.commit()
+  result = '{"Result":"Failure1"}'
+  try:
+    mysql.connection.commit();
+    result = '{"Result":"Success"}' 
+  except Exception as e:
+    result = '{"Result":"Failure2"}'
 
-  return '{"Result":"Success"}' # Really? maybe we should check!
+  return result
+
+@app.route("/delete") #Delete Student
+def delete():
+  id = request.args.get('studentid')
+  cur = mysql.connection.cursor() #create a connection to the SQL instance
+  s='''DELETE FROM students WHERE studentID = ('{}');'''.format(id) # kludge - use stored proc or params
+  cur.execute(s)
+  result = '{"Result":"Failure"}'
+  try:
+    mysql.connection.commit();
+    result = '{"Result":"Success"}' 
+  except Exception as e:
+    result = '{"Result":"Failure"}'
+
+  return result
   
 @app.route("/") #Default - Show Data
 def read(): # Name of the method
